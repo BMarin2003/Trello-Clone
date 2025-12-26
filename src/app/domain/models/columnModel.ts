@@ -1,11 +1,11 @@
-import { Card } from './card';
+import { CardModel } from './cardModel';
 
-export interface Column {
+export interface ColumnModel {
   id: string;
   title: string;
   position: string;
   boardId: string;
-  cards?: Card[];
+  cards?: CardModel[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -5,7 +5,7 @@ export enum CardPriority {
   CRITICAL = 'critical',
 }
 
-export interface Card {
+export interface CardModel {
   id: string;
   title: string;
   description?: string;
@@ -21,7 +21,7 @@ export interface Card {
   tags?: string[];
 }
 
-export const canEditCard = (card: Card, userId: string): boolean => {
+export const canEditCard = (card: CardModel, userId: string): boolean => {
   if (card.creatorId === userId) return true;
   if (card.assigneeIds.includes(userId)) return true;
   if (card.supervisorId === userId) return true;

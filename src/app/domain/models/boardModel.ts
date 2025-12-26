@@ -1,12 +1,12 @@
-import { Column } from './column';
+import { ColumnModel } from './columnModel';
 
 export type BoardColors = 'sky' | 'yellow' | 'green' | 'red' | 'violet';
 
-export interface Board {
+export interface BoardModel {
   id: string;
   title: string;
   backgroundColor: BoardColors;
-  columns?: Column[];
+  columns?: ColumnModel[];
   createdAt: Date;
   updatedAt: Date;
   ownerId: string;
