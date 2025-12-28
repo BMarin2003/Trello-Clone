@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { BoardModel } from '../models/boardModel';
+import { BoardModel } from '../models/board.model';
 
 export abstract class BoardRepository {
   abstract getBoardDetail(id: string): Observable<BoardModel | null>;

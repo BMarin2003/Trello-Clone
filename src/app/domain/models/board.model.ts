@@ -1,4 +1,4 @@
-import { ColumnModel } from './columnModel';
+import { ColumnModel } from './column.model';
 
 export type BoardColors = 'sky' | 'yellow' | 'green' | 'red' | 'violet';
 

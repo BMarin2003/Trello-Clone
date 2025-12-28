@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { ColumnRepository } from '../../domain/repositories/columnRepository';
-import { ColumnModel } from '../../domain/models/columnModel';
+import { ColumnRepository } from '../../domain/repositories/column.repository';
+import { ColumnModel } from '../../domain/models/column.model';
 
 @Injectable({ providedIn: 'root' })
 export class ColumnLocalStorageAdapter extends ColumnRepository {

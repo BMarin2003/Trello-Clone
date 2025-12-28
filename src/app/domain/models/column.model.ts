@@ -1,4 +1,4 @@
-import { CardModel } from './cardModel';
+import { CardModel } from './card.model';
 
 export interface ColumnModel {
   id: string;

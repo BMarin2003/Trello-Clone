@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ColumnRepository } from '../../domain/repositories/columnRepository';
+import { ColumnRepository } from '../../domain/repositories/column.repository';
 import { Observable } from 'rxjs';
-import { ColumnModel } from '../../domain/models/columnModel';
+import { ColumnModel } from '../../domain/models/column.model';
 
 @Injectable({ providedIn: 'root' })
 export class CreateColumnAction {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { CardRepository } from '../../domain/repositories/cardRepository';
-import { CardModel } from '../../domain/models/cardModel';
+import { CardRepository } from '../../domain/repositories/card.repository';
+import { CardModel } from '../../domain/models/card.model';
 
 @Injectable({ providedIn: 'root' })
 export class CardLocalStorageAdapter extends CardRepository {

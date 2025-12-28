@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { BoardRepository } from '../../domain/repositories/boardRepository';
-import { BoardModel, BoardColors } from '../../domain/models/boardModel';
+import { BoardRepository } from '../../domain/repositories/board.repository';
+import { BoardModel, BoardColors } from '../../domain/models/board.model';
 
 @Injectable({ providedIn: 'root' })
 export class BoardLocalStorageAdapter extends BoardRepository {

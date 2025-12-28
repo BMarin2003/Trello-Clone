@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { CardRepository } from '../../domain/repositories/cardRepository';
+import { CardRepository } from '../../domain/repositories/card.repository';
 import { Observable } from 'rxjs';
-import { CardModel } from '../../domain/models/cardModel';
+import { CardModel } from '../../domain/models/card.model';
 
 @Injectable({ providedIn: 'root' })
 export class CreateCardAction {

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { CardModel } from '../models/cardModel';
+import { CardModel } from '../models/card.model';
 
 export abstract class CardRepository {
   abstract getCardDetail(id: string): Observable<CardModel | null>;

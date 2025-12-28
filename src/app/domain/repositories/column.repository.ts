@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ColumnModel } from '../models/columnModel';
+import { ColumnModel } from '../models/column.model';
 
 export abstract class ColumnRepository {
   abstract createColumn(boardId: string, title: string, position: string): Observable<ColumnModel>;
