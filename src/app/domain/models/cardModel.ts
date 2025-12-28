@@ -19,6 +19,7 @@ export interface CardModel {
   columnId: string;
   area?: string;
   tags?: string[];
+  position: string[];
 }
 
 export const canEditCard = (card: CardModel, userId: string): boolean => {
