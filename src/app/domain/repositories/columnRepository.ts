@@ -2,9 +2,9 @@ import { Observable } from 'rxjs';
 import { ColumnModel } from '../models/columnModel';
 
 export abstract class ColumnRepository {
-  abstract create(boardId: string, title: string, position: string): Observable<ColumnModel>;
+  abstract createColumn(boardId: string, title: string, position: string): Observable<ColumnModel>;
 
-  abstract update(id: string, changes: Partial<ColumnModel>): Observable<ColumnModel>;
+  abstract updateColumn(id: string, changes: Partial<ColumnModel>): Observable<ColumnModel>;
 
-  abstract delete(id: string): Observable<boolean>;
+  abstract deleteColumn(id: string): Observable<boolean>;
 }

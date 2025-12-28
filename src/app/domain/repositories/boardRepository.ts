@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { BoardModel } from '../models/boardModel';
 
 export abstract class BoardRepository {
-  abstract getDetail(id: string): Observable<BoardModel | null>;
+  abstract getBoardDetail(id: string): Observable<BoardModel | null>;
 
   abstract getAll(): Observable<BoardModel[]>;
 
