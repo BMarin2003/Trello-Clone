@@ -1,13 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {BoardModel} from '../../../../../domain/models/board.model';
+import {BoardModel, BoardColors} from '../../../../../domain/models/board.model';
 import {GetBoardDetailAction} from '../../../../../actions/board/getBoardDetail.action';
+import {UpdateBoardAction} from '../../../../../actions/board/updateBoard.action';
+import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-board-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './boardDetail.component.html'
 })
 export class BoardDetailComponent implements OnInit {
@@ -15,8 +17,13 @@ export class BoardDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private getBoardDetail = inject(GetBoardDetailAction);
+  private updateBoard = inject(UpdateBoardAction);
 
   board = signal<BoardModel | null>(null);
+  isMenuOpen = signal(false);
+  colors: BoardColors[] = ['sky', 'yellow', 'green', 'red', 'violet'];
+  isEditingTitle = signal(false);
+  titleControl = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] });
 
   colorMap: Record<string, string> = {
     sky: 'bg-sky-600',
@@ -24,6 +31,14 @@ export class BoardDetailComponent implements OnInit {
     green: 'bg-green-600',
     red: 'bg-red-600',
     violet: 'bg-violet-600'
+  };
+
+  menuColorMap: Record<BoardColors, string> = {
+    sky: 'bg-sky-500',
+    yellow: 'bg-yellow-500',
+    green: 'bg-green-500',
+    red: 'bg-red-500',
+    violet: 'bg-violet-500'
   };
 
   ngOnInit() {
@@ -40,12 +55,67 @@ export class BoardDetailComponent implements OnInit {
       next: (board) => {
         if (board) {
           this.board.set(board);
+          this.titleControl.setValue(board.title);
         } else {
           this.router.navigate(['/boards']);
         }
       },
       error: () => this.router.navigate(['/boards'])
     });
+  }
+
+  editTitle() {
+    this.isEditingTitle.set(true);
+    setTimeout(() => {
+      const input = document.getElementById('titleInput') as HTMLInputElement;
+      input?.focus();
+      input?.select();
+    }, 0);
+  }
+
+  saveTitle() {
+    if (this.isEditingTitle()) {
+      this.isEditingTitle.set(false);
+
+      const newTitle = this.titleControl.value;
+      const currentBoard = this.board();
+
+      if (currentBoard && newTitle !== currentBoard.title && this.titleControl.valid) {
+
+        this.board.update(b => b ? ({ ...b, title: newTitle }) : null);
+
+        this.updateBoard.execute(currentBoard.id, { title: newTitle }).subscribe({
+          error: (err) => {
+            console.error(err);
+            this.board.set(currentBoard);
+          }
+        });
+      }
+    }
+  }
+
+  toggleMenu() {
+    this.isMenuOpen.update(v => !v);
+  }
+
+  updateBackgroundColor(color: BoardColors) {
+    const currentBoard = this.board();
+    if (!currentBoard || currentBoard.backgroundColor === color) return;
+
+    this.board.update(b => b ? ({ ...b, backgroundColor: color }) : null);
+
+    this.isMenuOpen.set(false);
+
+    this.updateBoard.execute(currentBoard.id, { backgroundColor: color }).subscribe({
+      error: () => {
+        this.board.set(currentBoard);
+      }
+    });
+  }
+
+  cancelEdit() {
+    this.isEditingTitle.set(false);
+    this.titleControl.setValue(this.board()?.title || '');
   }
 
   getBackgroundClass(): string {
