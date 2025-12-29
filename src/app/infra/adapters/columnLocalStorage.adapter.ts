@@ -8,7 +8,7 @@ import { ColumnModel } from '../../domain/models/column.model';
 export class ColumnLocalStorageAdapter extends ColumnRepository {
 
   private readonly STORAGE_KEY = 'trello-columns';
-  private readonly LATENCY_MS = 500;
+  private readonly LATENCY_MS = 10;
 
   createColumn(boardId: string, title: string, position: string): Observable<ColumnModel> {
     const newColumn: ColumnModel = {

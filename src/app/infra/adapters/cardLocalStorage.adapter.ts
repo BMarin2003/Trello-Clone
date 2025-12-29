@@ -8,7 +8,7 @@ import { CardModel } from '../../domain/models/card.model';
 export class CardLocalStorageAdapter extends CardRepository {
 
   private readonly STORAGE_KEY = 'trello-cards';
-  private readonly LATENCY_MS = 500;
+  private readonly LATENCY_MS = 10;
 
   constructor() {
     super();

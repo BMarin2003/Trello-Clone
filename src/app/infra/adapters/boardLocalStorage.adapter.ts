@@ -8,7 +8,7 @@ import { BoardModel, BoardColors } from '../../domain/models/board.model';
 export class BoardLocalStorageAdapter extends BoardRepository {
 
   private readonly STORAGE_KEY = 'trello-boards';
-  private readonly LATENCY_MS = 500;
+  private readonly LATENCY_MS = 10;
 
   constructor() {
     super();
