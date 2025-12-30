@@ -2,44 +2,51 @@
   <h2 class="text-2xl font-bold text-gray-800 mb-6">Mis Tableros</h2>
 
   @if (isLoading()) {
-    <div class="flex items-center gap-2 text-gray-500 animate-pulse">
-      <div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      <span>Cargando tus proyectos...</span>
-    </div>
+  <div class="flex items-center gap-2 text-gray-500 animate-pulse">
+    <div
+      class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"
+    ></div>
+    <span>Cargando tus proyectos...</span>
+  </div>
   }
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+  >
     @for (board of boards(); track board.id) {
+    <div
+      [routerLink]="['/boards', board.id]"
+      class="group relative h-32 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden"
+      [ngClass]="getBgColor(board.backgroundColor)"
+    >
       <div
-        [routerLink]="['/boards', board.id]"
-        class="group relative h-32 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden"
-        [ngClass]="getBgColor(board.backgroundColor)">
+        class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"
+      ></div>
 
-        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+      <h3 class="font-bold text-white text-lg relative z-10 drop-shadow-sm">
+        {{ board.title }}
+      </h3>
 
-        <h3 class="font-bold text-white text-lg relative z-10 drop-shadow-sm">{{ board.title }}</h3>
-
-        <div class="absolute bottom-4 right-4 text-white/80 text-xs font-medium">
-          {{ board.columns?.length || 0 }} listas
-        </div>
+      <div class="absolute bottom-4 right-4 text-white/80 text-xs font-medium">
+        {{ board.columns?.length || 0 }} listas
       </div>
+    </div>
     }
 
     <button
       (click)="openCreateModal()"
-      class="h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-200 hover:border-gray-400 hover:text-gray-700 transition-all gap-2 cursor-pointer">
+      class="h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-200 hover:border-gray-400 hover:text-gray-700 transition-all gap-2 cursor-pointer"
+    >
       <span class="text-3xl font-light">+</span>
       <span class="font-medium">Crear nuevo tablero</span>
     </button>
-
   </div>
 
   @if (isCreateModalOpen()) {
-    <app-create-board-modal
-      (close)="closeCreateModal()"
-      (confirm)="createBoardHandler($event)">
-    </app-create-board-modal>
+  <app-create-board-modal
+    (close)="closeCreateModal()"
+    (confirm)="createBoardHandler($event)"
+  >
+  </app-create-board-modal>
   }
-
 </div>

@@ -10,6 +10,15 @@ export class ColumnLocalStorageAdapter extends ColumnRepository {
   private readonly STORAGE_KEY = 'trello-columns';
   private readonly LATENCY_MS = 10;
 
+  getByBoardId(boardId: string): Observable<ColumnModel[]> {
+    const columns = this.getFromStorage();
+    const boardColumns = columns
+      .filter(c => c.boardId === boardId)
+      .sort((a, b) => a.position.localeCompare(b.position));
+
+    return of(boardColumns).pipe(delay(this.LATENCY_MS));
+  }
+
   createColumn(boardId: string, title: string, position: string): Observable<ColumnModel> {
     const newColumn: ColumnModel = {
       id: crypto.randomUUID(),

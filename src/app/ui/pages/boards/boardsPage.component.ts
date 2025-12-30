@@ -3,17 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { GetAllBoardsAction } from '../../../actions/board/getAllBoards.action';
 import { CreateBoardAction } from '../../../actions/board/createBoard.action';
-import {BoardColors, BoardModel} from '../../../domain/models/board.model';
-import {CreateBoardModalComponent} from './components/create-board-modal/createBoardModal.component';
+import { BoardColors, BoardModel } from '../../../domain/models/board.model';
+import { CreateBoardModalComponent } from './components/create-board-modal/createBoardModal.component';
 
 @Component({
   selector: 'app-boards-page',
   standalone: true,
   imports: [CommonModule, RouterLink, CreateBoardModalComponent],
-  templateUrl: './boardsPage.component.html'
+  templateUrl: './boardsPage.component.html',
 })
 export class BoardsPageComponent implements OnInit {
-
   private getAllBoards = inject(GetAllBoardsAction);
   private createBoard = inject(CreateBoardAction);
 
@@ -35,7 +34,7 @@ export class BoardsPageComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando tableros', err);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -48,16 +47,15 @@ export class BoardsPageComponent implements OnInit {
   }
 
   createBoardHandler(event: { title: string; color: BoardColors }) {
-
     this.closeCreateModal();
 
     this.createBoard.execute(event.title, event.color).subscribe({
       next: (newBoard) => {
-        this.boards.update(current => [...current, newBoard]);
+        this.boards.update((current) => [...current, newBoard]);
       },
       error: (err) => {
         console.error(err);
-      }
+      },
     });
   }
 
@@ -67,7 +65,7 @@ export class BoardsPageComponent implements OnInit {
       yellow: 'bg-yellow-500',
       green: 'bg-green-500',
       red: 'bg-red-500',
-      violet: 'bg-violet-500'
+      violet: 'bg-violet-500',
     };
     return map[color] || 'bg-gray-500';
   }

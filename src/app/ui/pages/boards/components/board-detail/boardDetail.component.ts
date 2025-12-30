@@ -1,27 +1,41 @@
-import {Component, OnInit, inject, signal, ViewChild} from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {BoardModel, BoardColors} from '../../../../../domain/models/board.model';
-import {GetBoardDetailAction} from '../../../../../actions/board/getBoardDetail.action';
-import {UpdateBoardAction} from '../../../../../actions/board/updateBoard.action';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  BoardModel,
+  BoardColors,
+} from '../../../../../domain/models/board.model';
+import { GetBoardDetailAction } from '../../../../../actions/board/getBoardDetail.action';
+import { UpdateBoardAction } from '../../../../../actions/board/updateBoard.action';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirmModal.component';
 import { DeleteBoardAction } from '../../../../../actions/board/deleteBoard.action';
-import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CreateColumnAction } from '../../../../../actions/column/createColumn.action';
+import { GetColumnsByBoardIdAction } from '../../../../../actions/column/getColumnsByBoardId.action';
+import { ColumnModel } from '../../../../../domain/models/column.model';
+import { BoardColumnComponent } from '../board-column/boardColumns.component';
 
 @Component({
   selector: 'app-board-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, ConfirmModalComponent],
-  templateUrl: './boardDetail.component.html'
+  imports: [
+    CommonModule,
+    RouterLink,
+    ReactiveFormsModule,
+    ConfirmModalComponent,
+    BoardColumnComponent,
+  ],
+  templateUrl: './boardDetail.component.html',
 })
 export class BoardDetailComponent implements OnInit {
-
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   private getBoardDetail = inject(GetBoardDetailAction);
   private updateBoard = inject(UpdateBoardAction);
   private deleteBoard = inject(DeleteBoardAction);
+  private createColumn = inject(CreateColumnAction);
+  private getColumns = inject(GetColumnsByBoardIdAction);
 
   @ViewChild(ConfirmModalComponent) confirmModal!: ConfirmModalComponent;
 
@@ -29,8 +43,17 @@ export class BoardDetailComponent implements OnInit {
   isMenuOpen = signal(false);
   isEditingTitle = signal(false);
   isDeleting = signal(false);
+  columns = signal<ColumnModel[]>([]);
+  isCreatingColumn = signal(false);
+  newColumnControl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
 
-  titleControl = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] });
+  titleControl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.minLength(3)],
+  });
   colors: BoardColors[] = ['sky', 'yellow', 'green', 'red', 'violet'];
 
   colorMap: Record<string, string> = {
@@ -38,7 +61,7 @@ export class BoardDetailComponent implements OnInit {
     yellow: 'bg-yellow-500',
     green: 'bg-green-600',
     red: 'bg-red-600',
-    violet: 'bg-violet-600'
+    violet: 'bg-violet-600',
   };
 
   menuColorMap: Record<BoardColors, string> = {
@@ -46,11 +69,11 @@ export class BoardDetailComponent implements OnInit {
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
     red: 'bg-red-500',
-    violet: 'bg-violet-500'
+    violet: 'bg-violet-500',
   };
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.loadBoard(id);
@@ -64,12 +87,66 @@ export class BoardDetailComponent implements OnInit {
         if (board) {
           this.board.set(board);
           this.titleControl.setValue(board.title);
+          this.loadColumns(board.id);
         } else {
           this.router.navigate(['/boards']);
         }
       },
-      error: () => this.router.navigate(['/boards'])
+      error: () => this.router.navigate(['/boards']),
     });
+  }
+
+  private loadColumns(boardId: string) {
+    this.getColumns.execute(boardId).subscribe({
+      next: (cols) => {
+        const sorted = cols.sort((a, b) =>
+          a.position.localeCompare(b.position)
+        );
+        this.columns.set(sorted);
+      },
+    });
+  }
+
+  enableAddColumn() {
+    this.isCreatingColumn.set(true);
+    setTimeout(() => {
+      const input = document.getElementById(
+        'newColumnInput'
+      ) as HTMLInputElement;
+      input?.focus();
+    }, 0);
+  }
+
+  cancelAddColumn() {
+    this.isCreatingColumn.set(false);
+    this.newColumnControl.reset();
+  }
+
+  saveColumn() {
+    if (this.newColumnControl.invalid || !this.board()) return;
+
+    const title = this.newColumnControl.value;
+    const currentCols = this.columns();
+    const lastPosition =
+      currentCols.length > 0
+        ? currentCols[currentCols.length - 1].position
+        : undefined;
+
+    this.createColumn.execute(this.board()!.id, title, lastPosition).subscribe({
+      next: (newCol) => {
+        this.columns.update((cols) => [...cols, newCol]);
+        this.cancelAddColumn();
+        this.scrollToRight();
+      },
+    });
+  }
+
+  private scrollToRight() {
+    setTimeout(() => {
+      const container = document.querySelector('main');
+      if (container)
+        container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+    }, 100);
   }
 
   editTitle() {
@@ -88,37 +165,44 @@ export class BoardDetailComponent implements OnInit {
       const newTitle = this.titleControl.value;
       const currentBoard = this.board();
 
-      if (currentBoard && newTitle !== currentBoard.title && this.titleControl.valid) {
+      if (
+        currentBoard &&
+        newTitle !== currentBoard.title &&
+        this.titleControl.valid
+      ) {
+        this.board.update((b) => (b ? { ...b, title: newTitle } : null));
 
-        this.board.update(b => b ? ({ ...b, title: newTitle }) : null);
-
-        this.updateBoard.execute(currentBoard.id, { title: newTitle }).subscribe({
-          error: (err) => {
-            console.error(err);
-            this.board.set(currentBoard);
-          }
-        });
+        this.updateBoard
+          .execute(currentBoard.id, { title: newTitle })
+          .subscribe({
+            error: (err) => {
+              console.error(err);
+              this.board.set(currentBoard);
+            },
+          });
       }
     }
   }
 
   toggleMenu() {
-    this.isMenuOpen.update(v => !v);
+    this.isMenuOpen.update((v) => !v);
   }
 
   updateBackgroundColor(color: BoardColors) {
     const currentBoard = this.board();
     if (!currentBoard || currentBoard.backgroundColor === color) return;
 
-    this.board.update(b => b ? ({ ...b, backgroundColor: color }) : null);
+    this.board.update((b) => (b ? { ...b, backgroundColor: color } : null));
 
     this.isMenuOpen.set(false);
 
-    this.updateBoard.execute(currentBoard.id, { backgroundColor: color }).subscribe({
-      error: () => {
-        this.board.set(currentBoard);
-      }
-    });
+    this.updateBoard
+      .execute(currentBoard.id, { backgroundColor: color })
+      .subscribe({
+        error: () => {
+          this.board.set(currentBoard);
+        },
+      });
   }
 
   cancelEdit() {
@@ -149,7 +233,7 @@ export class BoardDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error deleting board', err);
         this.isDeleting.set(false);
-      }
+      },
     });
   }
 }
