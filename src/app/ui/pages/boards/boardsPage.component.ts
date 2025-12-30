@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { GetAllBoardsAction } from '../../../actions/board/getAllBoards.action';
 import { CreateBoardAction } from '../../../actions/board/createBoard.action';
-import { BoardColors, BoardModel } from '../../../domain/models/board.model';
+import { Colors, BoardModel } from '../../../domain/models/board.model';
 import { CreateBoardModalComponent } from './components/create-board-modal/createBoardModal.component';
 
 @Component({
@@ -46,7 +46,7 @@ export class BoardsPageComponent implements OnInit {
     this.isCreateModalOpen.set(false);
   }
 
-  createBoardHandler(event: { title: string; color: BoardColors }) {
+  createBoardHandler(event: { title: string; color: Colors }) {
     this.closeCreateModal();
 
     this.createBoard.execute(event.title, event.color).subscribe({
@@ -62,10 +62,11 @@ export class BoardsPageComponent implements OnInit {
   getBgColor(color: string): string {
     const map: Record<string, string> = {
       sky: 'bg-sky-500',
-      yellow: 'bg-yellow-500',
-      green: 'bg-green-500',
-      red: 'bg-red-500',
+      yellow: 'bg-amber-500',
+      green: 'bg-emerald-500',
+      red: 'bg-rose-500',
       violet: 'bg-violet-500',
+      gray: 'bg-slate-500',
     };
     return map[color] || 'bg-gray-500';
   }

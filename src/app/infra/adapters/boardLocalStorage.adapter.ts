@@ -2,11 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { BoardRepository } from '../../domain/repositories/board.repository';
-import { BoardModel, BoardColors } from '../../domain/models/board.model';
+import { BoardModel, Colors } from '../../domain/models/board.model';
 
 @Injectable({ providedIn: 'root' })
 export class BoardLocalStorageAdapter extends BoardRepository {
-
   private readonly STORAGE_KEY = 'trello-boards';
   private readonly LATENCY_MS = 10;
 
@@ -21,12 +20,12 @@ export class BoardLocalStorageAdapter extends BoardRepository {
     const newBoard: BoardModel = {
       id: crypto.randomUUID(),
       title,
-      backgroundColor: backgroundColor as BoardColors,
+      backgroundColor: backgroundColor as Colors,
       createdAt: new Date(),
       updatedAt: new Date(),
       ownerId: 'me',
       memberIds: ['me'],
-      columns: []
+      columns: [],
     };
 
     const boards = this.getFromStorage();
@@ -38,7 +37,7 @@ export class BoardLocalStorageAdapter extends BoardRepository {
 
   getBoardDetail(id: string): Observable<BoardModel | null> {
     const boards = this.getFromStorage();
-    const board = boards.find(b => b.id === id) || null;
+    const board = boards.find((b) => b.id === id) || null;
     return of(board).pipe(delay(this.LATENCY_MS));
   }
 
@@ -47,9 +46,12 @@ export class BoardLocalStorageAdapter extends BoardRepository {
     return of(boards).pipe(delay(this.LATENCY_MS));
   }
 
-  updateBoard(id: string, changes: Partial<BoardModel>): Observable<BoardModel> {
+  updateBoard(
+    id: string,
+    changes: Partial<BoardModel>
+  ): Observable<BoardModel> {
     const boards = this.getFromStorage();
-    const index = boards.findIndex(b => b.id === id);
+    const index = boards.findIndex((b) => b.id === id);
 
     if (index === -1) {
       return throwError(() => new Error('Board not found'));
@@ -58,7 +60,7 @@ export class BoardLocalStorageAdapter extends BoardRepository {
     const updatedBoard = {
       ...boards[index],
       ...changes,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     boards[index] = updatedBoard;
@@ -70,7 +72,7 @@ export class BoardLocalStorageAdapter extends BoardRepository {
   deleteBoard(id: string): Observable<boolean> {
     let boards = this.getFromStorage();
     const initialLength = boards.length;
-    boards = boards.filter(b => b.id !== id);
+    boards = boards.filter((b) => b.id !== id);
 
     this.saveToStorage(boards);
     if (boards.length === initialLength) {
@@ -95,14 +97,13 @@ export class BoardLocalStorageAdapter extends BoardRepository {
     return of(true).pipe(delay(this.LATENCY_MS));
   }
 
-
   private getFromStorage(): BoardModel[] {
     const str = localStorage.getItem(this.STORAGE_KEY);
     const boards = JSON.parse(str || '[]');
     return boards.map((b: any) => ({
       ...b,
       createdAt: new Date(b.createdAt),
-      updatedAt: new Date(b.updatedAt)
+      updatedAt: new Date(b.updatedAt),
     }));
   }
 

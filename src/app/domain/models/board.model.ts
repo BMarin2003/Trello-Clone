@@ -1,11 +1,18 @@
 import { ColumnModel } from './column.model';
 
-export type BoardColors = 'sky' | 'yellow' | 'green' | 'red' | 'violet';
+export type Colors =
+  | 'sky'
+  | 'yellow'
+  | 'green'
+  | 'red'
+  | 'violet'
+  | 'gray'
+  | 'white';
 
 export interface BoardModel {
   id: string;
   title: string;
-  backgroundColor: BoardColors;
+  backgroundColor: Colors;
   columns?: ColumnModel[];
   createdAt: Date;
   updatedAt: Date;

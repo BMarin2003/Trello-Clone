@@ -1,10 +1,7 @@
 import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  BoardModel,
-  BoardColors,
-} from '../../../../../domain/models/board.model';
+import { BoardModel, Colors } from '../../../../../domain/models/board.model';
 import { GetBoardDetailAction } from '../../../../../actions/board/getBoardDetail.action';
 import { UpdateBoardAction } from '../../../../../actions/board/updateBoard.action';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirmModal.component';
@@ -12,6 +9,7 @@ import { DeleteBoardAction } from '../../../../../actions/board/deleteBoard.acti
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateColumnAction } from '../../../../../actions/column/createColumn.action';
 import { GetColumnsByBoardIdAction } from '../../../../../actions/column/getColumnsByBoardId.action';
+import { DeleteColumnAction } from '../../../../../actions/column/deleteColumn.action';
 import { ColumnModel } from '../../../../../domain/models/column.model';
 import { BoardColumnComponent } from '../board-column/boardColumns.component';
 import {
@@ -43,6 +41,7 @@ export class BoardDetailComponent implements OnInit {
   private updateBoard = inject(UpdateBoardAction);
   private deleteBoard = inject(DeleteBoardAction);
   private createColumn = inject(CreateColumnAction);
+  private deleteColumn = inject(DeleteColumnAction);
   private getColumns = inject(GetColumnsByBoardIdAction);
   private moveColumn = inject(MoveColumnAction);
 
@@ -54,6 +53,12 @@ export class BoardDetailComponent implements OnInit {
   isDeleting = signal(false);
   columns = signal<ColumnModel[]>([]);
   isCreatingColumn = signal(false);
+
+  deleteContext = signal<'board' | 'column'>('board');
+  columnIdToDelete = signal<string | null>(null);
+  modalTitle = signal('');
+  modalMessage = signal('');
+
   newColumnControl = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required],
@@ -63,22 +68,25 @@ export class BoardDetailComponent implements OnInit {
     nonNullable: true,
     validators: [Validators.required, Validators.minLength(3)],
   });
-  colors: BoardColors[] = ['sky', 'yellow', 'green', 'red', 'violet'];
+  colors: Colors[] = ['sky', 'yellow', 'green', 'red', 'violet', 'gray'];
 
   colorMap: Record<string, string> = {
     sky: 'bg-sky-600',
-    yellow: 'bg-yellow-500',
-    green: 'bg-green-600',
-    red: 'bg-red-600',
+    yellow: 'bg-amber-500',
+    green: 'bg-emerald-600',
+    red: 'bg-rose-600',
     violet: 'bg-violet-600',
+    gray: 'bg-slate-600',
   };
 
-  menuColorMap: Record<BoardColors, string> = {
+  menuColorMap: Record<Colors, string> = {
     sky: 'bg-sky-500',
-    yellow: 'bg-yellow-500',
-    green: 'bg-green-500',
-    red: 'bg-red-500',
+    yellow: 'bg-amber-500',
+    green: 'bg-emerald-500',
+    red: 'bg-rose-500',
     violet: 'bg-violet-500',
+    gray: 'bg-slate-500',
+    white: 'bg-white',
   };
 
   ngOnInit() {
@@ -197,13 +205,11 @@ export class BoardDetailComponent implements OnInit {
     this.isMenuOpen.update((v) => !v);
   }
 
-  updateBackgroundColor(color: BoardColors) {
+  updateBackgroundColor(color: Colors) {
     const currentBoard = this.board();
     if (!currentBoard || currentBoard.backgroundColor === color) return;
 
     this.board.update((b) => (b ? { ...b, backgroundColor: color } : null));
-
-    this.isMenuOpen.set(false);
 
     this.updateBoard
       .execute(currentBoard.id, { backgroundColor: color })
@@ -226,10 +232,33 @@ export class BoardDetailComponent implements OnInit {
 
   requestDeleteBoard() {
     this.isMenuOpen.set(false);
+    this.deleteContext.set('board');
+    this.modalTitle.set('Eliminar Tablero');
+    this.modalMessage.set(
+      'El tablero se eliminará permanentemente junto con todas sus listas y tarjetas. Esta acción no se puede deshacer.'
+    );
+    this.confirmModal.open();
+  }
+
+  requestDeleteColumn(columnId: string) {
+    this.deleteContext.set('column');
+    this.columnIdToDelete.set(columnId);
+    this.modalTitle.set('Eliminar Lista');
+    this.modalMessage.set(
+      '¿ Seguro que deseas eliminar esta lista? Todas las tarjetas dentro de ella también se perderán.'
+    );
     this.confirmModal.open();
   }
 
   onDeleteConfirm() {
+    if (this.deleteContext() === 'board') {
+      this.deleteBoardLogic();
+    } else {
+      this.deleteColumnLogic();
+    }
+  }
+
+  private deleteBoardLogic() {
     const currentBoard = this.board();
     if (!currentBoard || this.isDeleting()) return;
 
@@ -242,6 +271,21 @@ export class BoardDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error deleting board', err);
         this.isDeleting.set(false);
+      },
+    });
+  }
+
+  private deleteColumnLogic() {
+    const colId = this.columnIdToDelete();
+    if (!colId) return;
+
+    this.deleteColumn.execute(colId).subscribe({
+      next: () => {
+        this.columns.update((cols) => cols.filter((c) => c.id !== colId));
+        this.confirmModal.close();
+      },
+      error: (err) => {
+        console.error('Error deleting column', err);
       },
     });
   }

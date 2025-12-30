@@ -1,6 +1,9 @@
-<div class="w-full h-screen flex flex-col" [class]="getBackgroundClass()">
+<div
+  class="w-full h-screen flex flex-col relative"
+  [class]="getBackgroundClass()"
+>
   <header
-    class="px-4 h-14 w-full flex items-center justify-between bg-black/20 backdrop-blur-sm text-white shrink-0 z-10"
+    class="px-4 h-14 w-full flex items-center justify-between bg-black/20 backdrop-blur-sm text-white shrink-0 z-20"
   >
     <div class="flex items-center gap-4">
       <a
@@ -31,7 +34,7 @@
           (blur)="saveTitle()"
           (keydown.enter)="saveTitle()"
           (keydown.escape)="cancelEdit()"
-          class="px-3 py-1.5 text-lg font-bold text-gray-800 bg-white rounded-md shadow-i nner outline-none focus:ring-2 focus:ring-blue-500 w-64"
+          class="px-3 py-1.5 text-lg font-bold text-gray-800 bg-white rounded-md shadow-inner outline-none focus:ring-2 focus:ring-blue-500 w-64"
         />
         } @else {
         <h1
@@ -65,86 +68,10 @@
         </svg>
         Menú
       </button>
-
-      @if (isMenuOpen()) {
-      <div
-        class="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-2xl py-2 text-gray-800 animate-in fade-in zoom-in-95 duration-200 border border-gray-100"
-      >
-        <div
-          class="px-4 py-3 border-b border-gray-100 flex items-center justify-between mb-2"
-        >
-          <span class="font-semibold text-center flex-1">Menú</span>
-          <button
-            (click)="toggleMenu()"
-            class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div class="px-4 py-2">
-          <h3
-            class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3"
-          >
-            Fondo
-          </h3>
-          <div class="grid grid-cols-5 gap-2">
-            @for (color of colors; track color) {
-            <button
-              (click)="updateBackgroundColor(color)"
-              [class]="menuColorMap[color]"
-              class="w-8 h-8 rounded-md hover:ring-2 hover:ring-offset-2 hover:ring-gray-400 transition-all transform hover:scale-110"
-              [class.ring-2]="board()?.backgroundColor === color"
-              [class.ring-offset-2]="board()?.backgroundColor === color"
-              [class.ring-blue-500]="board()?.backgroundColor === color"
-            ></button>
-            }
-          </div>
-        </div>
-
-        <div class="my-2 border-t border-gray-100"></div>
-
-        <div class="px-4 py-2">
-          <button
-            (click)="requestDeleteBoard()"
-            class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2 group"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-4 h-4 group-hover:scale-110 transition-transform"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-              />
-            </svg>
-            Eliminar tablero
-          </button>
-        </div>
-      </div>
-      }
     </div>
   </header>
 
-  <main class="flex-1 overflow-x-auto overflow-y-hidden p-4">
+  <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 relative z-10">
     <div
       cdkDropList
       cdkDropListOrientation="horizontal"
@@ -153,8 +80,11 @@
       class="flex items-start gap-4 h-full"
     >
       @for (col of columns(); track col.id) {
-      <div cdkDrag class="h-full">
-        <app-board-column [column]="col"></app-board-column>
+      <div cdkDrag class="h-full cursor-default">
+        <app-board-column
+          [column]="col"
+          (onDelete)="requestDeleteColumn($event)"
+        ></app-board-column>
         <div
           *cdkDragPlaceholder
           class="w-72 h-full bg-gray-200/50 rounded-xl border border-dashed border-gray-400"
@@ -232,11 +162,89 @@
       </div>
     </div>
   </main>
-</div>
 
+  @if (isMenuOpen()) {
+  <div
+    class="fixed inset-0 z-40 bg-transparent cursor-default"
+    (click)="toggleMenu()"
+  ></div>
+
+  <div
+    class="absolute top-16 right-4 w-72 bg-white rounded-lg shadow-2xl py-2 text-gray-800 animate-in fade-in zoom-in-95 duration-200 border border-gray-100 z-50 cursor-default"
+  >
+    <div
+      class="px-4 py-3 border-b border-gray-100 flex items-center justify-between mb-2"
+    >
+      <span class="font-semibold text-center flex-1">Menú</span>
+      <button
+        (click)="toggleMenu()"
+        class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-4 h-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div class="px-4 py-2">
+      <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+        Fondo
+      </h3>
+      <div class="grid grid-cols-5 gap-2">
+        @for (color of colors; track color) {
+        <button
+          (click)="updateBackgroundColor(color)"
+          [class]="menuColorMap[color]"
+          class="w-8 h-8 rounded-md hover:ring-2 hover:ring-offset-2 hover:ring-gray-400 transition-all transform hover:scale-110"
+          [class.ring-2]="board()?.backgroundColor === color"
+          [class.ring-offset-2]="board()?.backgroundColor === color"
+          [class.ring-blue-500]="board()?.backgroundColor === color"
+        ></button>
+        }
+      </div>
+    </div>
+
+    <div class="my-2 border-t border-gray-100"></div>
+
+    <div class="px-4 py-2">
+      <button
+        (click)="requestDeleteBoard()"
+        class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2 group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-4 h-4 group-hover:scale-110 transition-transform"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+          />
+        </svg>
+        Eliminar tablero
+      </button>
+    </div>
+  </div>
+  }
+</div>
 <app-confirm-modal
-  title="Eliminar Tablero"
-  message="El tablero se eliminará permanentemente junto con todas sus listas y tarjetas. Esta acción no se puede deshacer."
+  [title]="modalTitle()"
+  [message]="modalMessage()"
   (onConfirm)="onDeleteConfirm()"
 >
 </app-confirm-modal>
