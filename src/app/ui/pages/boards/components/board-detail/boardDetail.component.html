@@ -31,7 +31,7 @@
           (blur)="saveTitle()"
           (keydown.enter)="saveTitle()"
           (keydown.escape)="cancelEdit()"
-          class="px-3 py-1.5 text-lg font-bold text-gray-800 bg-white rounded-md shadow-inner outline-none focus:ring-2 focus:ring-blue-500 w-64"
+          class="px-3 py-1.5 text-lg font-bold text-gray-800 bg-white rounded-md shadow-i nner outline-none focus:ring-2 focus:ring-blue-500 w-64"
         />
         } @else {
         <h1
@@ -145,9 +145,21 @@
   </header>
 
   <main class="flex-1 overflow-x-auto overflow-y-hidden p-4">
-    <div class="flex items-start gap-4 h-full">
+    <div
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      [cdkDropListData]="columns()"
+      (cdkDropListDropped)="drop($event)"
+      class="flex items-start gap-4 h-full"
+    >
       @for (col of columns(); track col.id) {
-      <app-board-column [column]="col"></app-board-column>
+      <div cdkDrag class="h-full">
+        <app-board-column [column]="col"></app-board-column>
+        <div
+          *cdkDragPlaceholder
+          class="w-72 h-full bg-gray-200/50 rounded-xl border border-dashed border-gray-400"
+        ></div>
+      </div>
       }
 
       <div class="w-72 shrink-0">

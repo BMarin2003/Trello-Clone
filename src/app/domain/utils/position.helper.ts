@@ -1,13 +1,23 @@
+import { LexoRank } from 'lexorank';
+
 export class PositionHelper {
   static getNewPosition(lastPosition?: string): string {
     if (!lastPosition) {
-      return 'a';
+      return LexoRank.middle().toString();
     }
-    const lastChar = lastPosition.slice(-1);
-    if (lastChar === 'z') {
-      return lastPosition + '0';
+    return LexoRank.parse(lastPosition).genNext().toString();
+  }
+
+  static rankBetween(prev?: string, next?: string): string {
+    if (!prev && !next) {
+      return LexoRank.middle().toString();
     }
-    const nextChar = String.fromCharCode(lastChar.charCodeAt(0) + 1);
-    return lastPosition.slice(0, -1) + nextChar;
+    if (!prev) {
+      return LexoRank.parse(next!).genPrev().toString();
+    }
+    if (!next) {
+      return LexoRank.parse(prev).genNext().toString();
+    }
+    return LexoRank.parse(prev).between(LexoRank.parse(next)).toString();
   }
 }

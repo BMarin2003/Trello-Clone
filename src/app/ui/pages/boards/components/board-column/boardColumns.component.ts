@@ -1,21 +1,49 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  signal,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ColumnModel } from '../../../../../domain/models/column.model';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { UpdateColumnAction } from '../../../../../actions/column/updateColumn.action';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-board-column',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, CdkDragHandle],
   template: `
     <div
       class="w-72 shrink-0 max-h-full flex flex-col bg-[#F1F2F4] rounded-xl shadow-sm border border-[#E9EEF2]"
     >
-      <div class="p-3 flex items-center justify-between cursor-pointer">
-        <h2 class="font-semibold text-gray-700 text-sm pl-2">
+      <div
+        cdkDragHandle
+        class="p-3 flex items-center justify-between cursor-grab active:cursor-grabbing"
+      >
+        @if (isEditingTitle()) {
+        <input
+          id="columnTitleInput"
+          [formControl]="titleControl"
+          (blur)="saveTitle()"
+          (keydown.enter)="saveTitle()"
+          (keydown.escape)="cancelEdit()"
+          class="w-full px-2 py-1 text-sm font-semibold text-gray-700 bg-white rounded border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          (click)="$event.stopPropagation()"
+        />
+        } @else {
+        <h2
+          (click)="editTitle()"
+          class="font-semibold text-gray-700 text-sm pl-2 cursor-pointer hover:bg-gray-400/50 rounded px-1 -ml-1 transition-colors flex-1 py-1 mr-2 truncate"
+        >
           {{ column.title }}
         </h2>
+        }
         <button
-          class="p-1 text-gray-500 hover:bg-gray-200 rounded cursor-pointer"
+          class="p-1 text-gray-500 hover:bg-gray-400/50 rounded cursor-pointer shrink-0"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -70,4 +98,42 @@ import { ColumnModel } from '../../../../../domain/models/column.model';
 })
 export class BoardColumnComponent {
   @Input({ required: true }) column!: ColumnModel;
+
+  private updateColumn = inject(UpdateColumnAction);
+
+  isEditingTitle = signal(false);
+  titleControl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+
+  editTitle() {
+    this.titleControl.setValue(this.column.title);
+    this.isEditingTitle.set(true);
+    setTimeout(() => {
+      const input = document.getElementById(
+        'columnTitleInput'
+      ) as HTMLInputElement;
+      input?.focus();
+      input?.select();
+    }, 0);
+  }
+
+  saveTitle() {
+    if (this.isEditingTitle() && this.titleControl.valid) {
+      this.isEditingTitle.set(false);
+      const newTitle = this.titleControl.value;
+
+      if (newTitle !== this.column.title) {
+        this.column = { ...this.column, title: newTitle };
+        this.updateColumn
+          .execute(this.column.id, { title: newTitle })
+          .subscribe();
+      }
+    }
+  }
+
+  cancelEdit() {
+    this.isEditingTitle.set(false);
+  }
 }

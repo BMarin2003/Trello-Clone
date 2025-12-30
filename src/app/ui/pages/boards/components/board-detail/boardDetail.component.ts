@@ -14,6 +14,13 @@ import { CreateColumnAction } from '../../../../../actions/column/createColumn.a
 import { GetColumnsByBoardIdAction } from '../../../../../actions/column/getColumnsByBoardId.action';
 import { ColumnModel } from '../../../../../domain/models/column.model';
 import { BoardColumnComponent } from '../board-column/boardColumns.component';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
+import { MoveColumnAction } from '../../../../../actions/column/moveColumn.action';
+import { PositionHelper } from '../../../../../domain/utils/position.helper';
 
 @Component({
   selector: 'app-board-detail',
@@ -24,6 +31,7 @@ import { BoardColumnComponent } from '../board-column/boardColumns.component';
     ReactiveFormsModule,
     ConfirmModalComponent,
     BoardColumnComponent,
+    DragDropModule,
   ],
   templateUrl: './boardDetail.component.html',
 })
@@ -36,6 +44,7 @@ export class BoardDetailComponent implements OnInit {
   private deleteBoard = inject(DeleteBoardAction);
   private createColumn = inject(CreateColumnAction);
   private getColumns = inject(GetColumnsByBoardIdAction);
+  private moveColumn = inject(MoveColumnAction);
 
   @ViewChild(ConfirmModalComponent) confirmModal!: ConfirmModalComponent;
 
@@ -233,6 +242,36 @@ export class BoardDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error deleting board', err);
         this.isDeleting.set(false);
+      },
+    });
+  }
+
+  drop(event: CdkDragDrop<ColumnModel[]>) {
+    const previousIndex = event.previousIndex;
+    const currentIndex = event.currentIndex;
+
+    if (previousIndex === currentIndex) return;
+
+    const columns = this.columns();
+    moveItemInArray(columns, previousIndex, currentIndex);
+    this.columns.set([...columns]);
+
+    const column = columns[currentIndex];
+    const prevCol = columns[currentIndex - 1];
+    const nextCol = columns[currentIndex + 1];
+
+    const prevPos = prevCol ? prevCol.position : undefined;
+    const nextPos = nextCol ? nextCol.position : undefined;
+
+    const newPosition = PositionHelper.rankBetween(prevPos, nextPos);
+    column.position = newPosition;
+
+    this.moveColumn.execute(column.id, newPosition).subscribe({
+      error: (err) => {
+        console.error('Error moving column', err);
+        if (this.board()) {
+          this.loadColumns(this.board()!.id);
+        }
       },
     });
   }
