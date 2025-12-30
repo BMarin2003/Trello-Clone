@@ -1,29 +1,37 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {Component, OnInit, inject, signal, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {BoardModel, BoardColors} from '../../../../../domain/models/board.model';
 import {GetBoardDetailAction} from '../../../../../actions/board/getBoardDetail.action';
 import {UpdateBoardAction} from '../../../../../actions/board/updateBoard.action';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirmModal.component';
+import { DeleteBoardAction } from '../../../../../actions/board/deleteBoard.action';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-board-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, ConfirmModalComponent],
   templateUrl: './boardDetail.component.html'
 })
 export class BoardDetailComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
   private getBoardDetail = inject(GetBoardDetailAction);
   private updateBoard = inject(UpdateBoardAction);
+  private deleteBoard = inject(DeleteBoardAction);
+
+  @ViewChild(ConfirmModalComponent) confirmModal!: ConfirmModalComponent;
 
   board = signal<BoardModel | null>(null);
   isMenuOpen = signal(false);
-  colors: BoardColors[] = ['sky', 'yellow', 'green', 'red', 'violet'];
   isEditingTitle = signal(false);
+  isDeleting = signal(false);
+
   titleControl = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] });
+  colors: BoardColors[] = ['sky', 'yellow', 'green', 'red', 'violet'];
 
   colorMap: Record<string, string> = {
     sky: 'bg-sky-600',
@@ -121,5 +129,27 @@ export class BoardDetailComponent implements OnInit {
   getBackgroundClass(): string {
     const color = this.board()?.backgroundColor;
     return color ? this.colorMap[color] : 'bg-gray-100';
+  }
+
+  requestDeleteBoard() {
+    this.isMenuOpen.set(false);
+    this.confirmModal.open();
+  }
+
+  onDeleteConfirm() {
+    const currentBoard = this.board();
+    if (!currentBoard || this.isDeleting()) return;
+
+    this.isDeleting.set(true);
+
+    this.deleteBoard.execute(currentBoard.id).subscribe({
+      next: () => {
+        this.router.navigate(['/boards']);
+      },
+      error: (err) => {
+        console.error('Error deleting board', err);
+        this.isDeleting.set(false);
+      }
+    });
   }
 }
