@@ -1,10 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink],
-  templateUrl: './main.layout.html'
+  templateUrl: './main.layout.html',
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  isCollapsed = signal(false);
+
+  toggleSidebar() {
+    this.isCollapsed.update((v) => !v);
+  }
+}

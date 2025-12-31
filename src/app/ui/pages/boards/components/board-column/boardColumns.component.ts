@@ -81,7 +81,7 @@ import { Colors } from '../../../../../domain/models/board.model';
                 @for (color of colors; track color) {
                 <button
                   (click)="updateColor(color)"
-                  class="w-6 h-6 rounded-full hover:scale-110 transition-transform ring-1 ring-gray-200"
+                  class="w-6 h-6 rounded-full hover:scale-110 transition-transform ring-1 ring-gray-200 cursor-pointer"
                   [class]="colorMap[color]"
                   [title]="color"
                 ></button>
@@ -93,7 +93,7 @@ import { Colors } from '../../../../../domain/models/board.model';
 
             <button
               (click)="requestDelete()"
-              class="w-full text-left px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2"
+              class="w-full text-left px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2 cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +113,6 @@ import { Colors } from '../../../../../domain/models/board.model';
             </button>
           </div>
 
-          <!-- Backdrop for closing menu -->
           <div class="fixed inset-0 z-40" (click)="toggleMenu($event)"></div>
           }
         </div>
