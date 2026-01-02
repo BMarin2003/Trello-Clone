@@ -71,12 +71,12 @@ export class BoardDetailComponent implements OnInit {
   colors: Colors[] = ['sky', 'yellow', 'green', 'red', 'violet', 'gray'];
 
   colorMap: Record<string, string> = {
-    sky: 'bg-sky-600',
+    sky: 'bg-sky-500',
     yellow: 'bg-amber-500',
-    green: 'bg-emerald-600',
-    red: 'bg-rose-600',
-    violet: 'bg-violet-600',
-    gray: 'bg-slate-600',
+    green: 'bg-emerald-500',
+    red: 'bg-rose-500',
+    violet: 'bg-violet-500',
+    gray: 'bg-slate-500',
   };
 
   menuColorMap: Record<Colors, string> = {
@@ -87,6 +87,57 @@ export class BoardDetailComponent implements OnInit {
     violet: 'bg-violet-500',
     gray: 'bg-slate-500',
     white: 'bg-white',
+  };
+
+  buttonColorMap: Record<
+    Colors,
+    { bg: string; hover: string; border: string }
+  > = {
+    sky: {
+      bg: 'bg-sky-500',
+      hover: 'hover:bg-sky-600',
+      border: 'border-sky-500',
+    },
+    yellow: {
+      bg: 'bg-amber-500',
+      hover: 'hover:bg-amber-600',
+      border: 'border-amber-400',
+    },
+    green: {
+      bg: 'bg-emerald-600',
+      hover: 'hover:bg-emerald-700',
+      border: 'border-emerald-500',
+    },
+    red: {
+      bg: 'bg-rose-600',
+      hover: 'hover:bg-rose-700',
+      border: 'border-rose-500',
+    },
+    violet: {
+      bg: 'bg-violet-600',
+      hover: 'hover:bg-violet-700',
+      border: 'border-violet-500',
+    },
+    gray: {
+      bg: 'bg-slate-600',
+      hover: 'hover:bg-slate-700',
+      border: 'border-slate-500',
+    },
+    white: {
+      bg: 'bg-blue-600',
+      hover: 'hover:bg-blue-700',
+      border: 'border-blue-500',
+    },
+  };
+
+  shadowColorMap: Record<Colors, string> = {
+    sky: 'hover:shadow-[0_0_12px_2px_rgba(14,165,233,0.6)]',
+    yellow: 'hover:shadow-[0_0_12px_2px_rgba(245,158,11,0.6)]',
+    green: 'hover:shadow-[0_0_12px_2px_rgba(16,185,129,0.6)]',
+    red: 'hover:shadow-[0_0_12px_2px_rgba(225,29,72,0.6)]',
+    violet: 'hover:shadow-[0_0_12px_2px_rgba(139,92,246,0.6)]',
+    gray: 'hover:shadow-[0_0_12px_2px_rgba(71,85,105,0.6)]',
+    white: 'hover:shadow-[0_0_12px_2px_rgba(255,255,255,0.6)]',
   };
 
   ngOnInit() {
@@ -228,6 +279,23 @@ export class BoardDetailComponent implements OnInit {
   getBackgroundClass(): string {
     const color = this.board()?.backgroundColor;
     return color ? this.colorMap[color] : 'bg-gray-100';
+  }
+
+  getButtonClass(): string {
+    const color = this.board()?.backgroundColor;
+    if (color && this.buttonColorMap[color]) {
+      const { bg, hover } = this.buttonColorMap[color];
+      return `${bg} ${hover} text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer`;
+    }
+    return 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer';
+  }
+
+  getInputBorderClass(): string {
+    const color = this.board()?.backgroundColor;
+    if (color && this.buttonColorMap[color]) {
+      return this.buttonColorMap[color].border;
+    }
+    return 'border-blue-500';
   }
 
   requestDeleteBoard() {

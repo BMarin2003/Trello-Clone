@@ -6,7 +6,6 @@ import { CardModel } from '../../domain/models/card.model';
 
 @Injectable({ providedIn: 'root' })
 export class CardLocalStorageAdapter extends CardRepository {
-
   private readonly STORAGE_KEY = 'trello-cards';
   private readonly LATENCY_MS = 10;
 
@@ -17,7 +16,9 @@ export class CardLocalStorageAdapter extends CardRepository {
     }
   }
 
-  createCard(card: Omit<CardModel, 'id' | 'createdAt' | 'updatedAt'>): Observable<CardModel> {
+  createCard(
+    card: Omit<CardModel, 'id' | 'createdAt' | 'updatedAt'>
+  ): Observable<CardModel> {
     const newCard: CardModel = {
       ...card,
       id: crypto.randomUUID(),
@@ -36,14 +37,14 @@ export class CardLocalStorageAdapter extends CardRepository {
 
   getCardDetail(id: string): Observable<CardModel | null> {
     const cards = this.getFromStorage();
-    const card = cards.find(c => c.id === id);
+    const card = cards.find((c) => c.id === id);
 
     return of(card || null).pipe(delay(this.LATENCY_MS));
   }
 
   updateCard(id: string, changes: Partial<CardModel>): Observable<CardModel> {
     const cards = this.getFromStorage();
-    const index = cards.findIndex(c => c.id === id);
+    const index = cards.findIndex((c) => c.id === id);
 
     if (index === -1) {
       return throwError(() => new Error('Card not found'));
@@ -52,7 +53,7 @@ export class CardLocalStorageAdapter extends CardRepository {
     const updatedCard = {
       ...cards[index],
       ...changes,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     cards[index] = updatedCard;
@@ -61,9 +62,13 @@ export class CardLocalStorageAdapter extends CardRepository {
     return of(updatedCard).pipe(delay(this.LATENCY_MS));
   }
 
-  updateCardPosition(id: string, newPosition: string, newColumnId?: string): Observable<CardModel> {
+  updateCardPosition(
+    id: string,
+    newPosition: string,
+    newColumnId?: string
+  ): Observable<CardModel> {
     const cards = this.getFromStorage();
-    const index = cards.findIndex(c => c.id === id);
+    const index = cards.findIndex((c) => c.id === id);
 
     if (index === -1) {
       return throwError(() => new Error('Card not found'));
@@ -71,7 +76,7 @@ export class CardLocalStorageAdapter extends CardRepository {
 
     const card = cards[index];
 
-    (card as any).position = newPosition;
+    card.position = [newPosition];
 
     if (newColumnId) {
       card.columnId = newColumnId;
@@ -88,7 +93,7 @@ export class CardLocalStorageAdapter extends CardRepository {
   deleteCard(id: string): Observable<boolean> {
     let cards = this.getFromStorage();
     const initialLength = cards.length;
-    cards = cards.filter(c => c.id !== id);
+    cards = cards.filter((c) => c.id !== id);
 
     this.saveToStorage(cards);
 
@@ -102,7 +107,7 @@ export class CardLocalStorageAdapter extends CardRepository {
       ...c,
       createdAt: new Date(c.createdAt),
       updatedAt: new Date(c.updatedAt),
-      deadline: c.deadline ? new Date(c.deadline) : undefined
+      deadline: c.deadline ? new Date(c.deadline) : undefined,
     }));
   }
 

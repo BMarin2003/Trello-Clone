@@ -6,20 +6,35 @@ import { ColumnModel } from '../../domain/models/column.model';
 
 @Injectable({ providedIn: 'root' })
 export class ColumnLocalStorageAdapter extends ColumnRepository {
-
   private readonly STORAGE_KEY = 'trello-columns';
   private readonly LATENCY_MS = 10;
 
   getByBoardId(boardId: string): Observable<ColumnModel[]> {
     const columns = this.getFromStorage();
+    const cards = this.getCardsFromStorage();
+
     const boardColumns = columns
-      .filter(c => c.boardId === boardId)
+      .filter((c) => c.boardId === boardId)
+      .map((col) => ({
+        ...col,
+        cards: cards
+          .filter((card) => card.columnId === col.id)
+          .sort((a, b) => {
+            return (
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
+          }),
+      }))
       .sort((a, b) => a.position.localeCompare(b.position));
 
     return of(boardColumns).pipe(delay(this.LATENCY_MS));
   }
 
-  createColumn(boardId: string, title: string, position: string): Observable<ColumnModel> {
+  createColumn(
+    boardId: string,
+    title: string,
+    position: string
+  ): Observable<ColumnModel> {
     const newColumn: ColumnModel = {
       id: crypto.randomUUID(),
       title,
@@ -27,7 +42,7 @@ export class ColumnLocalStorageAdapter extends ColumnRepository {
       boardId,
       createdAt: new Date(),
       updatedAt: new Date(),
-      cards: []
+      cards: [],
     };
 
     const columns = this.getFromStorage();
@@ -37,13 +52,20 @@ export class ColumnLocalStorageAdapter extends ColumnRepository {
     return of(newColumn).pipe(delay(this.LATENCY_MS));
   }
 
-  updateColumn(id: string, changes: Partial<ColumnModel>): Observable<ColumnModel> {
+  updateColumn(
+    id: string,
+    changes: Partial<ColumnModel>
+  ): Observable<ColumnModel> {
     const columns = this.getFromStorage();
-    const index = columns.findIndex(c => c.id === id);
+    const index = columns.findIndex((c) => c.id === id);
 
     if (index === -1) return throwError(() => new Error('Column not found'));
 
-    const updatedColumn = { ...columns[index], ...changes, updatedAt: new Date() };
+    const updatedColumn = {
+      ...columns[index],
+      ...changes,
+      updatedAt: new Date(),
+    };
     columns[index] = updatedColumn;
     this.saveToStorage(columns);
 
@@ -51,10 +73,9 @@ export class ColumnLocalStorageAdapter extends ColumnRepository {
   }
 
   deleteColumn(id: string): Observable<boolean> {
-
     let columns = this.getFromStorage();
     const initialLength = columns.length;
-    columns = columns.filter(c => c.id !== id);
+    columns = columns.filter((c) => c.id !== id);
     this.saveToStorage(columns);
 
     if (columns.length === initialLength) {
@@ -78,11 +99,22 @@ export class ColumnLocalStorageAdapter extends ColumnRepository {
     return columns.map((c: any) => ({
       ...c,
       createdAt: new Date(c.createdAt),
-      updatedAt: new Date(c.updatedAt)
+      updatedAt: new Date(c.updatedAt),
     }));
   }
 
   private saveToStorage(columns: ColumnModel[]): void {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(columns));
+  }
+
+  private getCardsFromStorage(): any[] {
+    const str = localStorage.getItem('trello-cards');
+    const cards = JSON.parse(str || '[]');
+    return cards.map((c: any) => ({
+      ...c,
+      createdAt: new Date(c.createdAt),
+      updatedAt: new Date(c.updatedAt),
+      deadline: c.deadline ? new Date(c.deadline) : undefined,
+    }));
   }
 }

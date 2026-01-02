@@ -8,6 +8,8 @@ import { BoardLocalStorageAdapter } from './infra/adapters/boardLocalStorage.ada
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ColumnRepository } from './domain/repositories/column.repository';
 import { ColumnLocalStorageAdapter } from './infra/adapters/columnLocalStorage.adapter';
+import { CardRepository } from './domain/repositories/card.repository';
+import { CardLocalStorageAdapter } from './infra/adapters/cardLocalStorage.adapter';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,5 +18,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     { provide: BoardRepository, useClass: BoardLocalStorageAdapter },
     { provide: ColumnRepository, useClass: ColumnLocalStorageAdapter },
+    { provide: CardRepository, useClass: CardLocalStorageAdapter },
   ],
 };

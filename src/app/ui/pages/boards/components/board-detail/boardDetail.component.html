@@ -21,7 +21,6 @@
     </div>
   </header>
 
-  <!-- Board Controls Bar -->
   <div
     class="h-12 w-full flex items-center justify-between px-4 bg-black/20 backdrop-blur-sm text-white shrink-0 z-20"
   >
@@ -70,6 +69,7 @@
   <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 relative z-10">
     <div
       cdkDropList
+      cdkDropListGroup
       cdkDropListOrientation="horizontal"
       [cdkDropListData]="columns()"
       (cdkDropListDropped)="drop($event)"
@@ -80,6 +80,7 @@
         <app-board-column
           class="h-full block"
           [column]="col"
+          [boardColor]="board()?.backgroundColor || 'sky'"
           (onDelete)="requestDeleteColumn($event)"
         ></app-board-column>
         <div
@@ -92,7 +93,7 @@
       <div class="w-72 shrink-0">
         @if (isCreatingColumn()) {
         <div
-          class="bg-gray-100 rounded-xl p-3 shadow-sm border border-gray-200 animate-in fade-in duration-200"
+          class="bg-[#12141a] rounded-xl p-3 shadow-lg border border-gray-700/50 animate-in fade-in duration-200"
         >
           <input
             id="newColumnInput"
@@ -100,13 +101,11 @@
             (keydown.enter)="saveColumn()"
             (keydown.escape)="cancelAddColumn()"
             placeholder="Introduce el título de la lista..."
-            class="w-full px-3 py-2 rounded-lg border-2 border-blue-500 focus:outline-none text-sm mb-2"
+            class="w-full px-3 py-2 rounded-lg border-2 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none text-sm mb-2"
+            [ngClass]="getInputBorderClass()"
           />
           <div class="flex items-center gap-2">
-            <button
-              (click)="saveColumn()"
-              class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors cursor-pointer"
-            >
+            <button (click)="saveColumn()" [ngClass]="getButtonClass()">
               Añadir lista
             </button>
             <button
@@ -167,15 +166,15 @@
   ></div>
 
   <div
-    class="absolute top-16 right-4 w-72 bg-white rounded-lg shadow-2xl py-2 text-gray-800 animate-in fade-in zoom-in-95 duration-200 border border-gray-100 z-50 cursor-default"
+    class="absolute top-16 right-4 w-72 bg-[#12141a] rounded-lg shadow-2xl py-2 text-gray-200 animate-in fade-in zoom-in-95 duration-200 border border-gray-700 z-50 cursor-default"
   >
     <div
-      class="px-4 py-3 border-b border-gray-100 flex items-center justify-between mb-2"
+      class="px-4 py-3 border-b border-gray-700 flex items-center justify-between mb-2"
     >
       <span class="font-semibold text-center flex-1">Menú</span>
       <button
         (click)="toggleMenu()"
-        class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+        class="text-gray-400 hover:text-gray-200 p-1 rounded-full hover:bg-white/10"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -195,7 +194,7 @@
     </div>
 
     <div class="px-4 py-2">
-      <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
         Fondo
       </h3>
       <div class="grid grid-cols-5 gap-2">
@@ -203,21 +202,23 @@
         <button
           (click)="updateBackgroundColor(color)"
           [class]="menuColorMap[color]"
-          class="w-8 h-8 cursor-pointer rounded-md hover:ring-2 hover:ring-offset-2 hover:ring-gray-400 transition-all transform hover:scale-110"
+          class="w-8 h-8 cursor-pointer rounded-md transition-all duration-300 transform hover:scale-110"
+          [ngClass]="shadowColorMap[color]"
           [class.ring-2]="board()?.backgroundColor === color"
           [class.ring-offset-2]="board()?.backgroundColor === color"
-          [class.ring-blue-500]="board()?.backgroundColor === color"
+          [class.ring-offset-[#12141a]]="board()?.backgroundColor === color"
+          [class.ring-white]="board()?.backgroundColor === color"
         ></button>
         }
       </div>
     </div>
 
-    <div class="my-2 border-t border-gray-100"></div>
+    <div class="my-2 border-t border-gray-700"></div>
 
     <div class="px-4 py-2">
       <button
         (click)="requestDeleteBoard()"
-        class="w-full cursor-pointer text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2 group"
+        class="w-full cursor-pointer text-left px-3 py-2 text-sm text-red-400 hover:bg-red-800/30 rounded transition-colors flex items-center gap-2 group"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
