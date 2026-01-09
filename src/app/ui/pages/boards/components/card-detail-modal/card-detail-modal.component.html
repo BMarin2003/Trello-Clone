@@ -1,0 +1,322 @@
+@if (isOpen && card) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+  (click)="close()"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200 border border-gray-100 flex flex-col md:flex-row"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Close button -->
+    <button
+      (click)="close()"
+      class="absolute top-4 right-4 p-2 z-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+
+    <!-- Main Content (Left) -->
+    <div class="flex-1 p-6 md:p-8 space-y-6">
+      <!-- Header -->
+      <div>
+        <div
+          class="flex items-center gap-3 mb-3 text-gray-500 text-sm font-medium"
+        >
+          <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
+              />
+            </svg>
+            {{ columnTitle }}
+          </span>
+        </div>
+        <input
+          id="cardTitle"
+          name="cardTitle"
+          aria-label="Título de la tarjeta"
+          [(ngModel)]="card.title"
+          (blur)="updateField('title', card.title)"
+          class="text-2xl font-bold text-gray-800 leading-tight w-full outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 -ml-1 bg-transparent hover:bg-gray-50 transition-colors"
+        />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label
+          for="cardDescription"
+          class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h7"
+            />
+          </svg>
+          Descripción
+        </label>
+        <textarea
+          id="cardDescription"
+          name="cardDescription"
+          [(ngModel)]="card.description"
+          (blur)="updateField('description', card.description)"
+          placeholder="Añadir una descripción más detallada..."
+          rows="4"
+          class="w-full bg-gray-50 rounded-lg p-4 text-gray-700 text-[15px] leading-relaxed resize-none focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none border border-transparent focus:border-blue-200 transition-all placeholder-gray-400"
+        ></textarea>
+      </div>
+
+      <!-- Activity / Dates (Read only view usually, but requested editable deadlines) -->
+      <div>
+        <h3
+          class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Fechas
+        </h3>
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-gray-400 uppercase"
+              >Creada</span
+            >
+            <span>{{ card.createdAt | date : "medium" }}</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-gray-400 uppercase"
+              >Actualizada</span
+            >
+            <span>{{ card.updatedAt | date : "medium" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar (Right) -->
+    <div
+      class="w-full md:w-72 bg-gray-50 p-6 space-y-6 md:border-l border-gray-100 flex flex-col h-full rounded-r-xl"
+    >
+      <!-- Supervisor -->
+      <div class="space-y-2">
+        <label
+          for="supervisorSelect"
+          class="text-xs font-bold text-gray-500 uppercase tracking-wider block"
+          >Supervisor</label
+        >
+        <div class="relative group">
+          <select
+            id="supervisorSelect"
+            name="supervisorSelect"
+            [ngModel]="card.supervisorId"
+            (ngModelChange)="updateField('supervisorId', $event)"
+            class="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-gray-300 transition-colors"
+          >
+            <option [ngValue]="undefined">Sin supervisor</option>
+            @for (user of users; track user.id) {
+            <option [value]="user.id">{{ user.name }}</option>
+            }
+          </select>
+          <!-- Custom arrow/icon could go here -->
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Responsibles (Assignees) -->
+      <div class="space-y-2">
+        <span
+          class="text-xs font-bold text-gray-500 uppercase tracking-wider block"
+          >Responsables</span
+        >
+        <div class="flex flex-wrap gap-2">
+          @for (memberId of card.assigneeIds; track memberId) {
+          <div
+            class="flex items-center gap-1 pl-1 pr-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold cursor-pointer hover:bg-blue-200 transition-colors group"
+            (click)="toggleMember(memberId)"
+            title="Clic para remover"
+          >
+            <img
+              [src]="getUserAvatar(memberId)"
+              class="w-5 h-5 rounded-full bg-white object-cover"
+            />
+            <span>{{ getUserName(memberId) }}</span>
+            <span class="hidden group-hover:block ml-0.5">&times;</span>
+          </div>
+          }
+          <div class="relative">
+            <button
+              (click)="toggleUserDropdown()"
+              class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 transition-colors cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+
+            @if(showUserDropdown) {
+            <div
+              class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-20 max-h-48 overflow-y-auto"
+            >
+              <div class="p-1">
+                @for(user of users; track user.id) {
+                @if(!card.assigneeIds.includes(user.id)) {
+                <div
+                  (click)="toggleMember(user.id)"
+                  class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer text-sm"
+                >
+                  <img [src]="user.avatar" class="w-6 h-6 rounded-full" />
+                  <span class="truncate">{{ user.name }}</span>
+                </div>
+                } }
+              </div>
+            </div>
+            <div
+              class="fixed inset-0 z-10"
+              (click)="toggleUserDropdown()"
+            ></div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Deadline -->
+      <div class="space-y-2">
+        <label
+          for="deadlineInput"
+          class="text-xs font-bold text-gray-500 uppercase tracking-wider block"
+          >Fecha y Hora Límite</label
+        >
+        <input
+          id="deadlineInput"
+          name="deadlineInput"
+          type="datetime-local"
+          [ngModel]="formatDateForInput(card.deadline)"
+          (ngModelChange)="updateDate('deadline', $event)"
+          class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors"
+        />
+
+        @if(card.deadline) {
+        <div class="flex items-center gap-2 mt-2">
+          <input
+            type="checkbox"
+            aria-label="Estado de vencimiento"
+            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            [checked]="isOverdue(card.deadline)"
+            disabled
+          />
+          <span
+            class="text-xs font-medium"
+            [class.text-red-500]="isOverdue(card.deadline)"
+            [class.text-green-600]="!isOverdue(card.deadline)"
+          >
+            {{ isOverdue(card.deadline) ? "Vencida" : "Pendiente" }}
+          </span>
+        </div>
+        }
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-auto space-y-2">
+        <button
+          class="w-full flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+          title="Próximamente"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+            />
+          </svg>
+          Adjuntar
+        </button>
+        <button
+          class="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-600 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+          title="Próximamente"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}

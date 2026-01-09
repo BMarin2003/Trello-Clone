@@ -1,4 +1,11 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -6,7 +13,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Colors } from '../../../../../domain/models/board.model';
+import { BoardModel, Colors } from '../../../../../domain/models/board.model';
 import { MockUserService } from '../../../../../infra/services/mock-user.service';
 import {
   UserGroupModel,
@@ -14,28 +21,22 @@ import {
 } from '../../../../../domain/models/user.model';
 
 @Component({
-  selector: 'app-create-board-modal',
+  selector: 'app-edit-board-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './createBoardModal.component.html',
+  templateUrl: './edit-board-modal.component.html',
 })
-export class CreateBoardModalComponent implements OnInit {
+export class EditBoardModalComponent implements OnInit {
+  @Input() board!: BoardModel;
   @Output() close = new EventEmitter<void>();
-  @Output() confirm = new EventEmitter<{
-    title: string;
-    color: Colors;
-    projectName?: string;
-    responsibles?: string[];
-    memberIds?: string[];
-    memberGroupIds?: string[];
-  }>();
+  @Output() confirm = new EventEmitter<Partial<BoardModel>>();
 
   private mockUserService = inject(MockUserService);
 
   users: UserModel[] = [];
   groups: UserGroupModel[] = [];
 
-  form: FormGroup;
+  form!: FormGroup;
 
   colors: Colors[] = ['sky', 'yellow', 'green', 'red', 'violet', 'gray'];
 
@@ -49,20 +50,20 @@ export class CreateBoardModalComponent implements OnInit {
     white: 'bg-white',
   };
 
-  constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      color: ['sky', [Validators.required]],
-      projectName: [''],
-      responsibles: [[]],
-      memberIds: [[]],
-      memberGroupIds: [[]],
-    });
-  }
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.mockUserService.getUsers().subscribe((u) => (this.users = u));
     this.mockUserService.getGroups().subscribe((g) => (this.groups = g));
+
+    this.form = this.fb.group({
+      title: [this.board.title, [Validators.required, Validators.minLength(3)]],
+      backgroundColor: [this.board.backgroundColor, [Validators.required]],
+      projectName: [this.board.projectName || ''],
+      responsibles: [this.board.responsibles || []],
+      memberIds: [this.board.memberIds || []],
+      memberGroupIds: [this.board.memberGroupIds || []],
+    });
   }
 
   onOverlayClick(event: MouseEvent) {
@@ -71,7 +72,6 @@ export class CreateBoardModalComponent implements OnInit {
     }
   }
 
-  // Helpers for multi-select (simplified for now, could be better with an actual UI component)
   toggleSelection(controlName: string, id: string) {
     const current = this.form.get(controlName)?.value as string[];
     if (current.includes(id)) {
@@ -83,7 +83,7 @@ export class CreateBoardModalComponent implements OnInit {
 
   isSelected(controlName: string, id: string): boolean {
     const current = this.form.get(controlName)?.value as string[];
-    return current.includes(id);
+    return current ? current.includes(id) : false;
   }
 
   submit() {

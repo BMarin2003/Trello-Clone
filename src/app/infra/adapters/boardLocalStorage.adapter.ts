@@ -16,7 +16,17 @@ export class BoardLocalStorageAdapter extends BoardRepository {
     }
   }
 
-  createBoard(title: string, backgroundColor: string): Observable<BoardModel> {
+  createBoard(
+    title: string,
+    backgroundColor: string,
+    config?: {
+      projectId?: string;
+      projectName?: string;
+      responsibles?: string[];
+      memberIds?: string[];
+      memberGroupIds?: string[];
+    }
+  ): Observable<BoardModel> {
     const newBoard: BoardModel = {
       id: crypto.randomUUID(),
       title,
@@ -24,8 +34,12 @@ export class BoardLocalStorageAdapter extends BoardRepository {
       createdAt: new Date(),
       updatedAt: new Date(),
       ownerId: 'me',
-      memberIds: ['me'],
+      memberIds: config?.memberIds || ['me'],
       columns: [],
+      projectId: config?.projectId,
+      projectName: config?.projectName,
+      responsibles: config?.responsibles,
+      memberGroupIds: config?.memberGroupIds,
     };
 
     const boards = this.getFromStorage();

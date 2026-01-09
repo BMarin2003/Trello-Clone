@@ -1,0 +1,234 @@
+<div
+  class="w-72 shrink-0 max-h-full flex flex-col rounded-xl shadow-lg relative backdrop-blur-md border border-white/20"
+  [ngClass]="getColumnColorClass()"
+>
+  <div
+    cdkDragHandle
+    class="p-3 flex items-center justify-between cursor-grab active:cursor-grabbing group relative"
+  >
+    @if (isEditingTitle()) {
+    <input
+      [id]="'columnTitleInput-' + column.id"
+      name="columnTitle"
+      [formControl]="titleControl"
+      (blur)="saveTitle()"
+      (keydown.enter)="saveTitle()"
+      (keydown.escape)="cancelEdit()"
+      class="w-full px-2 py-1 text-sm font-semibold text-gray-700 bg-white rounded border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+      (click)="$event.stopPropagation()"
+    />
+    } @else {
+    <h2
+      (click)="editTitle()"
+      class="font-semibold text-gray-700 text-sm pl-2 cursor-pointer hover:bg-black/5 rounded px-1 -ml-1 transition-colors flex-1 py-1 mr-2 truncate"
+    >
+      {{ column.title }}
+    </h2>
+    }
+
+    <div class="relative">
+      <button
+        (click)="toggleMenu($event)"
+        class="p-1 text-gray-500 hover:bg-black/10 rounded cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        [class.opacity-100]="isMenuOpen()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+          />
+        </svg>
+      </button>
+
+      @if (isMenuOpen()) {
+      <div
+        class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 p-2 animate-in fade-in zoom-in-95 duration-200"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="mb-3">
+          <span
+            class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2 px-1"
+            >Color</span
+          >
+          <div class="grid grid-cols-6 gap-1">
+            @for (color of colors; track color) {
+            <button
+              (click)="updateColor(color)"
+              class="w-6 h-6 rounded-full hover:scale-110 transition-transform ring-1 ring-gray-200 cursor-pointer"
+              [class]="colorMap[color]"
+              [title]="color"
+            ></button>
+            }
+          </div>
+        </div>
+        <button
+          (click)="requestDelete()"
+          class="w-full text-left px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2 cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-4 h-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+            />
+          </svg>
+          Eliminar lista
+        </button>
+      </div>
+      <div class="fixed inset-0 z-40" (click)="toggleMenu($event)"></div>
+      }
+    </div>
+  </div>
+
+  <div
+    class="flex-1 overflow-y-auto overflow-x-hidden px-2 min-h-[50px] flex flex-col gap-2 pb-2"
+    cdkDropList
+    [cdkDropListData]="column.cards"
+    (cdkDropListDropped)="drop($event)"
+  >
+    @if (!filteredCards || filteredCards.length === 0) {
+    <div
+      class="h-full flex items-center justify-center text-xs text-gray-500/70 italic py-4 min-h-[50px]"
+    >
+      Sin tarjetas
+    </div>
+    } @else { @for (card of filteredCards; track card.id) {
+    <div
+      cdkDrag
+      [cdkDragData]="card"
+      (click)="openCardDetail(card)"
+      class="bg-[#1b2838] p-2 rounded-lg shadow-md border-[2px] border-transparent hover:border-gray-200 cursor-grab active:cursor-grabbing group hover:shadow-md transition-all relative"
+    >
+      <div
+        *cdkDragPreview
+        class="box-border rounded-lg shadow-2xl bg-[#1b2838] p-2 border border-blue-400 opacity-95 rotate-3 cursor-grabbing"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <span class="text-sm text-gray-100 font-medium leading-tight">{{
+            card.title
+          }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-start justify-between gap-2">
+        <span
+          class="text-sm text-gray-100 font-medium leading-tight select-none"
+          >{{ card.title }}</span
+        >
+        <button
+          class="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-4 h-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    } }
+  </div>
+
+  <div class="p-3 pt-0">
+    @if (isAddingCard()) {
+    <div
+      class="bg-white p-2 rounded-lg border-2 border-blue-500 shadow-sm animate-in fade-in duration-150 relative z-40"
+      [ngClass]="getInputBorderClass()"
+      (click)="$event.stopPropagation()"
+      #addCardForm
+    >
+      <input
+        [formControl]="newCardControl"
+        (keydown.enter)="saveCard()"
+        (keydown.escape)="cancelAddCard()"
+        placeholder="Introduce un título para esta tarjeta..."
+        class="w-full text-sm focus:outline-none mb-2 text-gray-700 placeholder:text-gray-400"
+        [id]="'newCardInput-' + column.id"
+        name="newCardTitle"
+        #newCardInput
+      />
+      <div class="flex items-center gap-2">
+        <button
+          (click)="saveCard()"
+          class="text-white px-3 py-1.5 rounded text-sm font-medium transition-colors shadow-sm"
+          [ngClass]="getButtonClass()"
+        >
+          Añadir tarjeta
+        </button>
+        <button
+          (click)="cancelAddCard()"
+          class="text-gray-500 hover:text-gray-700 hover:bg-gray-200 p-1.5 rounded cursor-pointer transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="w-5 h-5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    } @else {
+    <button
+      (click)="toggleAddCard()"
+      class="w-full flex items-center gap-2 text-gray-700 p-2 rounded-lg text-sm transition-all text-left cursor-pointer font-medium"
+      [ngClass]="getAddCardButtonClass()"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-4 h-4"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4.5v15m7.5-7.5h-15"
+        />
+      </svg>
+      Añadir tarjeta
+    </button>
+    }
+  </div>
+</div>
+<app-card-detail-modal
+  [isOpen]="!!selectedCard"
+  [card]="selectedCard"
+  [columnTitle]="column.title"
+  (onClose)="closeCardDetail()"
+  (onUpdate)="updateCardHandler($event)"
+></app-card-detail-modal>

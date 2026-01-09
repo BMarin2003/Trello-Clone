@@ -3,12 +3,12 @@
   (click)="onOverlayClick($event)"
 >
   <div
-    class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up"
+    class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto"
   >
     <div
-      class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+      class="px-6 py-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10"
     >
-      <h3 class="text-lg font-bold text-gray-800">Crear Tablero</h3>
+      <h3 class="text-lg font-bold text-gray-800">Editar Tablero</h3>
       <button
         (click)="close.emit()"
         class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
@@ -30,29 +30,23 @@
       </button>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="p-6 space-y-6">
+    <form
+      *ngIf="form"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="p-6 space-y-6"
+    >
       <div class="space-y-2">
-        <label
-          for="boardTitleCreate"
-          class="block text-sm font-medium text-gray-700"
+        <label for="boardTitle" class="block text-sm font-medium text-gray-700"
           >Título del tablero</label
         >
         <input
-          id="boardTitleCreate"
-          name="boardTitleCreate"
+          id="boardTitle"
           type="text"
           formControlName="title"
-          placeholder="Ej: Lanzamiento Web v2"
+          name="boardTitle"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-          [class.border-red-500]="
-            form.get('title')?.invalid && form.get('title')?.touched
-          "
         />
-        @if (form.get('title')?.invalid && form.get('title')?.touched) {
-        <p class="text-xs text-red-500">
-          El título es requerido (min 3 caracteres).
-        </p>
-        }
       </div>
 
       <div class="space-y-3">
@@ -63,12 +57,12 @@
           @for (color of colors; track color) {
           <button
             type="button"
-            (click)="form.get('color')?.setValue(color)"
+            (click)="form.get('backgroundColor')?.setValue(color)"
             [class]="colorMap[color]"
             [title]="color"
             class="w-8 h-8 rounded-full cursor-pointer transition-transform hover:scale-110 relative flex items-center justify-center"
           >
-            @if (form.get('color')?.value === color) {
+            @if (form.get('backgroundColor')?.value === color) {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-white"
@@ -89,16 +83,14 @@
 
       <!-- Project Field -->
       <div class="space-y-2">
-        <label
-          for="projectNameCreate"
-          class="block text-sm font-medium text-gray-700"
+        <label for="projectName" class="block text-sm font-medium text-gray-700"
           >Proyecto</label
         >
         <input
-          id="projectNameCreate"
-          name="projectNameCreate"
+          id="projectName"
           type="text"
           formControlName="projectName"
+          name="projectName"
           placeholder="Nombre del proyecto"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
         />
@@ -180,7 +172,7 @@
         </div>
       </div>
 
-      <div class="flex justify-end gap-3 pt-2">
+      <div class="flex justify-end gap-3 pt-2 sticky bottom-0 bg-white pb-2">
         <button
           type="button"
           (click)="close.emit()"
@@ -193,7 +185,7 @@
           [disabled]="form.invalid"
           class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm cursor-pointer"
         >
-          Crear Tablero
+          Guardar Cambios
         </button>
       </div>
     </form>

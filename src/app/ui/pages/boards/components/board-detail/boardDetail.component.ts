@@ -12,6 +12,7 @@ import { GetColumnsByBoardIdAction } from '../../../../../actions/column/getColu
 import { DeleteColumnAction } from '../../../../../actions/column/deleteColumn.action';
 import { ColumnModel } from '../../../../../domain/models/column.model';
 import { BoardColumnComponent } from '../board-column/boardColumns.component';
+import { EditBoardModalComponent } from '../edit-board-modal/edit-board-modal.component';
 import {
   CdkDragDrop,
   DragDropModule,
@@ -19,6 +20,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { MoveColumnAction } from '../../../../../actions/column/moveColumn.action';
 import { PositionHelper } from '../../../../../domain/utils/position.helper';
+import { MockUserService } from '../../../../../infra/services/mock-user.service';
 
 @Component({
   selector: 'app-board-detail',
@@ -30,6 +32,7 @@ import { PositionHelper } from '../../../../../domain/utils/position.helper';
     ConfirmModalComponent,
     BoardColumnComponent,
     DragDropModule,
+    EditBoardModalComponent,
   ],
   templateUrl: './boardDetail.component.html',
 })
@@ -58,6 +61,26 @@ export class BoardDetailComponent implements OnInit {
   columnIdToDelete = signal<string | null>(null);
   modalTitle = signal('');
   modalMessage = signal('');
+
+  // Filter State
+  showFilters = signal(false);
+  filterCriteria = signal<{
+    query?: string;
+    memberIds?: string[];
+    due?: 'overdue' | 'dueSoon' | 'noDate';
+  }>({});
+
+  availableUsers = signal<any[]>([]);
+  // I should use UserModel but need to import it. I'll use any for now or better import it.
+  // I will import MockUserService and inject it.
+
+  private mockUserService = inject(MockUserService);
+
+  loadUsers() {
+    this.mockUserService
+      .getUsers()
+      .subscribe((u) => this.availableUsers.set(u));
+  }
 
   newColumnControl = new FormControl('', {
     nonNullable: true,
@@ -141,6 +164,7 @@ export class BoardDetailComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.loadUsers();
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
@@ -276,6 +300,35 @@ export class BoardDetailComponent implements OnInit {
     this.titleControl.setValue(this.board()?.title || '');
   }
 
+  isEditModalOpen = signal(false);
+
+  openEditModal() {
+    this.isMenuOpen.set(false);
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen.set(false);
+  }
+
+  updateBoardHandler(changes: Partial<BoardModel>) {
+    const currentBoard = this.board();
+    if (!currentBoard) return;
+
+    this.closeEditModal();
+
+    const updatedBoard = { ...currentBoard, ...changes };
+    this.board.set(updatedBoard);
+
+    this.updateBoard.execute(currentBoard.id, changes).subscribe({
+      error: (err) => {
+        console.error('Error updating board', err);
+        // Revert on error
+        this.board.set(currentBoard);
+      },
+    });
+  }
+
   getBackgroundClass(): string {
     const color = this.board()?.backgroundColor;
     return color ? this.colorMap[color] : 'bg-gray-100';
@@ -296,6 +349,27 @@ export class BoardDetailComponent implements OnInit {
       return this.buttonColorMap[color].border;
     }
     return 'border-blue-500';
+  }
+
+  toggleFilterPanel() {
+    this.showFilters.update((v) => !v);
+  }
+
+  toggleUserFilter(userId: string) {
+    this.filterCriteria.update((current) => {
+      const members = current.memberIds || [];
+      const newMembers = members.includes(userId)
+        ? members.filter((id) => id !== userId)
+        : [...members, userId];
+      return { ...current, memberIds: newMembers };
+    });
+  }
+
+  setDueFilter(val: 'overdue' | 'dueSoon' | 'noDate' | undefined) {
+    this.filterCriteria.update((current) => {
+      if (current.due === val) return { ...current, due: undefined };
+      return { ...current, due: val };
+    });
   }
 
   requestDeleteBoard() {

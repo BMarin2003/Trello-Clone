@@ -46,10 +46,19 @@ export class BoardsPageComponent implements OnInit {
     this.isCreateModalOpen.set(false);
   }
 
-  createBoardHandler(event: { title: string; color: Colors }) {
+  createBoardHandler(event: {
+    title: string;
+    color: Colors;
+    projectId?: string;
+    responsibles?: string[];
+    memberIds?: string[];
+    memberGroupIds?: string[];
+  }) {
     this.closeCreateModal();
 
-    this.createBoard.execute(event.title, event.color).subscribe({
+    const { title, color, ...config } = event;
+
+    this.createBoard.execute(title, color, config).subscribe({
       next: (newBoard) => {
         this.boards.update((current) => [...current, newBoard]);
       },

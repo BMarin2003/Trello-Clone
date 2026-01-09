@@ -5,12 +5,19 @@ import { BoardModel } from '../../domain/models/board.model';
 
 @Injectable({ providedIn: 'root' })
 export class CreateBoardAction {
-
   constructor(private boardRepository: BoardRepository) {}
 
-  execute(title: string, backgroundColor: string): Observable<BoardModel> {
-
-    return this.boardRepository.createBoard(title, backgroundColor);
+  execute(
+    title: string,
+    backgroundColor: string,
+    config?: {
+      projectId?: string;
+      projectName?: string;
+      responsibles?: string[];
+      memberIds?: string[];
+      memberGroupIds?: string[];
+    }
+  ): Observable<BoardModel> {
+    return this.boardRepository.createBoard(title, backgroundColor, config);
   }
 }
-

@@ -18,4 +18,8 @@ export interface BoardModel {
   updatedAt: Date;
   ownerId: string;
   memberIds: string[];
+  responsibles?: string[];
+  projectId?: string; // Could be a string or a separate model, keeping it simple for now
+  projectName?: string;
+  memberGroupIds?: string[];
 }

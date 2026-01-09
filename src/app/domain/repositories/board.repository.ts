@@ -6,9 +6,22 @@ export abstract class BoardRepository {
 
   abstract getAll(): Observable<BoardModel[]>;
 
-  abstract createBoard(title: string, backgroundColor: string): Observable<BoardModel>;
+  abstract createBoard(
+    title: string,
+    backgroundColor: string,
+    config?: {
+      projectId?: string;
+      projectName?: string;
+      responsibles?: string[];
+      memberIds?: string[];
+      memberGroupIds?: string[];
+    }
+  ): Observable<BoardModel>;
 
-  abstract updateBoard(id: string, changes: Partial<BoardModel>): Observable<BoardModel>;
+  abstract updateBoard(
+    id: string,
+    changes: Partial<BoardModel>
+  ): Observable<BoardModel>;
 
   abstract deleteBoard(id: string): Observable<boolean>;
 }
