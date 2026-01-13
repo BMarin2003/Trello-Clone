@@ -7,7 +7,6 @@
     class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200 border border-gray-100 flex flex-col md:flex-row"
     (click)="$event.stopPropagation()"
   >
-    <!-- Close button -->
     <button
       (click)="close()"
       class="absolute top-4 right-4 p-2 z-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
@@ -28,9 +27,7 @@
       </svg>
     </button>
 
-    <!-- Main Content (Left) -->
     <div class="flex-1 p-6 md:p-8 space-y-6">
-      <!-- Header -->
       <div>
         <div
           class="flex items-center gap-3 mb-3 text-gray-500 text-sm font-medium"
@@ -59,7 +56,6 @@
         />
       </div>
 
-      <!-- Description -->
       <div>
         <label
           for="cardDescription"
@@ -92,7 +88,6 @@
         ></textarea>
       </div>
 
-      <!-- Activity / Dates (Read only view usually, but requested editable deadlines) -->
       <div>
         <h3
           class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2"
@@ -237,7 +232,6 @@
         </div>
       </div>
 
-      <!-- Deadline -->
       <div class="space-y-2">
         <label
           for="deadlineInput"
@@ -273,7 +267,6 @@
         }
       </div>
 
-      <!-- Actions -->
       <div class="mt-auto space-y-2">
         <button
           class="w-full flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
@@ -296,8 +289,9 @@
           Adjuntar
         </button>
         <button
-          class="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-600 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-          title="Próximamente"
+          (click)="requestDelete()"
+          class="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-600 font-semibold py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer"
+          title="Eliminar tarjeta"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -319,4 +313,10 @@
     </div>
   </div>
 </div>
+
+<app-confirm-modal
+  title="Eliminar tarjeta"
+  message="¿Estás seguro de que deseas eliminar esta tarjeta? Esta acción no se puede deshacer."
+  (onConfirm)="confirmDelete()"
+></app-confirm-modal>
 }

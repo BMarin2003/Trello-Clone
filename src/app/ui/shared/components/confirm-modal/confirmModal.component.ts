@@ -7,8 +7,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
   standalone: true,
   imports: [CommonModule],
   template: `
+    @if (isOpen()) {
     <div
-      *ngIf="isOpen()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       [@fadeInOut]
     >
@@ -58,6 +58,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
         </div>
       </div>
     </div>
+    }
   `,
   animations: [
     trigger('fadeInOut', [
@@ -76,20 +77,22 @@ import { animate, style, transition, trigger } from '@angular/animations';
   ],
 })
 export class ConfirmModalComponent {
+  isOpen = signal(false);
   @Input() title: string = 'Confirmar acción';
   @Input() message: string = '¿Estás seguro?';
   @Output() onConfirm = new EventEmitter<void>();
-
-  isOpen = signal(false);
+  @Output() onCancel = new EventEmitter<void>();
 
   open() {
     this.isOpen.set(true);
   }
+
   close() {
     this.isOpen.set(false);
+    this.onCancel.emit();
   }
+
   confirm() {
     this.onConfirm.emit();
-    this.close();
   }
 }

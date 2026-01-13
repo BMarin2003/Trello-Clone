@@ -6,17 +6,19 @@ import {
   HostListener,
   inject,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModel } from '../../../../../domain/models/card.model';
 import { MockUserService } from '../../../../../infra/services/mock-user.service';
 import { UserModel } from '../../../../../domain/models/user.model';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirmModal.component';
 
 @Component({
   selector: 'app-card-detail-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, ConfirmModalComponent],
   templateUrl: './card-detail-modal.component.html',
 })
 export class CardDetailModalComponent implements OnInit {
@@ -25,10 +27,13 @@ export class CardDetailModalComponent implements OnInit {
   @Input() isOpen = false;
   @Output() onClose = new EventEmitter<void>();
   @Output() onUpdate = new EventEmitter<Partial<CardModel>>();
+  @Output() onDelete = new EventEmitter<void>();
 
   private mockUserService = inject(MockUserService);
   users: UserModel[] = [];
   showUserDropdown = false;
+
+  @ViewChild(ConfirmModalComponent) confirmModal!: ConfirmModalComponent;
 
   constructor() {}
 
@@ -38,6 +43,10 @@ export class CardDetailModalComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape() {
+    if (this.confirmModal && this.confirmModal.isOpen()) {
+      this.confirmModal.close();
+      return;
+    }
     if (this.isOpen) {
       this.close();
     }
@@ -91,5 +100,14 @@ export class CardDetailModalComponent implements OnInit {
 
   getUserAvatar(id: string): string {
     return this.users.find((u) => u.id === id)?.avatar || '';
+  }
+
+  requestDelete() {
+    this.confirmModal.open();
+  }
+
+  confirmDelete() {
+    this.onDelete.emit();
+    this.confirmModal.close();
   }
 }

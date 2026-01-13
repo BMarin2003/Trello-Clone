@@ -14,6 +14,7 @@ import { ColumnModel } from '../../../../../domain/models/column.model';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UpdateColumnAction } from '../../../../../actions/column/updateColumn.action';
 import { UpdateCardAction } from '../../../../../actions/card/updateCard.action';
+import { DeleteCardAction } from '../../../../../actions/card/deleteCard.action';
 import {
   CdkDragDrop,
   CdkDragHandle,
@@ -62,6 +63,7 @@ export class BoardColumnComponent {
   private updateColumn = inject(UpdateColumnAction);
   private createCard = inject(CreateCardAction);
   private updateCard = inject(UpdateCardAction);
+  private deleteCard = inject(DeleteCardAction);
   private moveCard = inject(MoveCardAction);
   private elementRef = inject(ElementRef);
 
@@ -333,5 +335,20 @@ export class BoardColumnComponent {
     };
 
     this.updateCard.execute(cardId, changes).subscribe();
+  }
+
+  deleteCardHandler() {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.id;
+
+    // Optimistic delete
+    this.column = {
+      ...this.column,
+      cards: this.column.cards?.filter((c) => c.id !== cardId),
+    };
+
+    this.closeCardDetail();
+
+    this.deleteCard.execute(cardId).subscribe();
   }
 }

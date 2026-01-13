@@ -62,7 +62,6 @@ export class BoardDetailComponent implements OnInit {
   modalTitle = signal('');
   modalMessage = signal('');
 
-  // Filter State
   showFilters = signal(false);
   filterCriteria = signal<{
     query?: string;
@@ -71,8 +70,6 @@ export class BoardDetailComponent implements OnInit {
   }>({});
 
   availableUsers = signal<any[]>([]);
-  // I should use UserModel but need to import it. I'll use any for now or better import it.
-  // I will import MockUserService and inject it.
 
   private mockUserService = inject(MockUserService);
 
